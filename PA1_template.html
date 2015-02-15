@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="author" content="Ignacio Trujillo" />
+
+
+<title>Reproducible Research: Peer Assessment 1</title>
+
+<script src="PA1_template_files/jquery-1.11.0/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link href="PA1_template_files/bootstrap-2.3.2/css/bootstrap.min.css" rel="stylesheet" />
+<link href="PA1_template_files/bootstrap-2.3.2/css/bootstrap-responsive.min.css" rel="stylesheet" />
+<script src="PA1_template_files/bootstrap-2.3.2/js/bootstrap.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="PA1_template_files/highlight/default.css"
+      type="text/css" />
+<script src="PA1_template_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+</style>
+<div class="container-fluid main-container">
+
+
+<div id="header">
+<h1 class="title">Reproducible Research: Peer Assessment 1</h1>
+<h4 class="author"><em>Ignacio Trujillo</em></h4>
+<h4 class="date"><em>Sunday, February 15, 2015</em></h4>
+</div>
+
+<div id="TOC">
+<ul>
+<li><a href="#basic-settings">Basic settings</a></li>
+<li><a href="#loading-and-preprocessing-the-data">Loading and preprocessing the data</a></li>
+<li><a href="#what-is-mean-total-number-of-steps-taken-per-day">What is mean total number of steps taken per day?</a></li>
+<li><a href="#what-is-the-average-daily-activity-pattern">What is the average daily activity pattern?</a></li>
+<li><a href="#imputing-missing-values">Imputing missing values</a></li>
+<li><a href="#are-there-differences-in-activity-patterns-between-weekdays-and-weekends">Are there differences in activity patterns between weekdays and weekends?</a></li>
+</ul>
+</div>
+
+<div id="basic-settings" class="section level3">
+<h3>Basic settings</h3>
+<pre class="r"><code>echo = TRUE  # Always make code visible
+options(scipen = 1)  # Turn off scientific notations for numbers</code></pre>
+</div>
+<div id="loading-and-preprocessing-the-data" class="section level3">
+<h3>Loading and preprocessing the data</h3>
+<ol style="list-style-type: decimal">
+<li><p>Load the data (i.e. <code>read.csv()</code>)</p></li>
+<li><p>Process/transform the data (if necessary) into a format suitable for your analysis</p></li>
+</ol>
+<pre class="r"><code>fileUrl &lt;- &quot;https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip&quot;
+destFile &lt;- &quot;activity.zip&quot;
+unzippedFile &lt;- &quot;activity.csv&quot;
+if(!file.exists(destFile)){download.file(fileUrl,destfile = destFile)}
+if(!file.exists(unzippedFile)){unzip(destFile) }
+data &lt;- read.csv(&quot;activity.csv&quot;, colClasses = c(&quot;integer&quot;, &quot;Date&quot;, &quot;factor&quot;))
+data$month &lt;- as.numeric(format(data$date, &quot;%m&quot;))
+noNA &lt;- na.omit(data)
+rownames(noNA) &lt;- 1:nrow(noNA)</code></pre>
+</div>
+<div id="what-is-mean-total-number-of-steps-taken-per-day" class="section level3">
+<h3>What is mean total number of steps taken per day?</h3>
+<p>For this part of the assignment, you can ignore the missing values in the dataset.</p>
+<ol style="list-style-type: decimal">
+<li>Make a histogram of the total number of steps taken each day</li>
+</ol>
+<pre class="r"><code>library(&quot;plyr&quot;)
+stepsByDate &lt;- ddply(data,~date,summarise,steps=sum(steps))
+hist(stepsByDate$steps, 
+     col= &quot;steelblue&quot;, 
+     main = &quot;Histogram of Dialy Steps&quot;,
+     xlab = &quot;Number of Steps&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/Histogram%20of%20Number%20of%20Steps-1.png" /></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Calculate and report the mean and median total number of steps taken per day</li>
+</ol>
+<p>Mean total number of steps taken per day:</p>
+<pre class="r"><code>mean(stepsByDate$steps,na.rm=TRUE)</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<p>Median total number of steps taken per day:</p>
+<pre class="r"><code>median(stepsByDate$steps,na.rm=TRUE)</code></pre>
+<pre><code>## [1] 10765</code></pre>
+</div>
+<div id="what-is-the-average-daily-activity-pattern" class="section level3">
+<h3>What is the average daily activity pattern?</h3>
+<ol style="list-style-type: decimal">
+<li>Make a time series plot (i.e. type = &quot;l&quot;) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)</li>
+</ol>
+<pre class="r"><code>stepsByInterval &lt;- ddply(data,~interval,summarise,Steps=mean(steps,na.rm=TRUE))
+plot(stepsByInterval$Steps,
+     type = &quot;l&quot;,
+     main = &quot;Average Steps by 5-minute Interval&quot;,
+     col=&quot;steelBlue&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/Daily%20Average-1.png" /></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?</li>
+</ol>
+<pre class="r"><code>stepsByInterval[stepsByInterval$Steps == max(stepsByInterval$Steps),]</code></pre>
+<pre><code>##     interval    Steps
+## 272      835 206.1698</code></pre>
+</div>
+<div id="imputing-missing-values" class="section level3">
+<h3>Imputing missing values</h3>
+<ol style="list-style-type: decimal">
+<li>Calculate and report the total number of missing values in the dataset (i.e. the total number of rows with NAs):</li>
+</ol>
+<pre class="r"><code>sum(is.na(data))</code></pre>
+<pre><code>## [1] 2304</code></pre>
+<p>There are 2304 missing values.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.</li>
+</ol>
+<ul>
+<li>My strategy is to use the mean for that 5-minute interval to fill each NA value in the steps column.</li>
+</ul>
+<ol start="3" style="list-style-type: decimal">
+<li>Create a new dataset that is equal to the original dataset but with the missing data filled in.</li>
+</ol>
+<pre class="r"><code>newData &lt;- data 
+for (i in 1:nrow(newData)) {
+  if (is.na(newData$steps[i])) {
+    newData$steps[i] &lt;- stepsByInterval[which(newData$interval[i] == stepsByInterval$interval), ]$Steps
+  }
+}
+
+head(newData)</code></pre>
+<pre><code>##       steps       date interval month
+## 1 1.7169811 2012-10-01        0    10
+## 2 0.3396226 2012-10-01        5    10
+## 3 0.1320755 2012-10-01       10    10
+## 4 0.1509434 2012-10-01       15    10
+## 5 0.0754717 2012-10-01       20    10
+## 6 2.0943396 2012-10-01       25    10</code></pre>
+<pre class="r"><code>sum(is.na(newData))</code></pre>
+<pre><code>## [1] 0</code></pre>
+<p>Now there is 0 registries with NA values.</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Make a histogram of the total number of steps taken each day and Calculate and report the <em>mean</em> and <em>median</em> total number of steps taken per day.</li>
+</ol>
+<pre class="r"><code>newStepsByDate &lt;- ddply(newData,~date,summarise,steps=sum(steps))
+hist(newStepsByDate$steps, 
+     col= &quot;steelblue&quot;, 
+     main = &quot;Histogram of Dialy Steps w/o NAs&quot;,
+     xlab = &quot;Number of Steps&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/New%20Histogram%20of%20Number%20of%20Steps-1.png" /></p>
+<p>Mean total number of steps taken per day:</p>
+<pre class="r"><code>newTotalSteps &lt;- aggregate(newData$steps, 
+                           list(Date = newData$date), 
+                           FUN = &quot;sum&quot;)$x
+newMean &lt;- mean(newTotalSteps)
+newMean</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<p>Median total number of steps taken per day:</p>
+<pre class="r"><code>newMedian &lt;- median(newTotalSteps)
+newMedian</code></pre>
+<pre><code>## [1] 10766.19</code></pre>
+<ul>
+<li>Do these values differ from the estimates from the first part of the assignment? What is the impact of imputing missing data on the estimates of the total daily number of steps?</li>
+</ul>
+<p>Compare them with the two before imputing missing data:</p>
+<pre class="r"><code>oldMean &lt;- mean(stepsByDate$steps,na.rm=TRUE)
+oldMedian &lt;- median(stepsByDate$steps,na.rm=TRUE)
+newMean - oldMean</code></pre>
+<pre><code>## [1] 0</code></pre>
+<pre class="r"><code>newMedian - oldMedian</code></pre>
+<pre><code>## [1] 1.188679</code></pre>
+<p>When adding the missing data with the mean of the 5-minute interval, the new mean of total steps is the same but the median became grater that the one without the substitution of NAs.</p>
+</div>
+<div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level3">
+<h3>Are there differences in activity patterns between weekdays and weekends?</h3>
+<ol style="list-style-type: decimal">
+<li>Create a new factor variable in the dataset with two levels -- &quot;weekday&quot; and &quot;weekend&quot; indicating whether a given date is a weekday or weekend day.</li>
+</ol>
+<pre class="r"><code>head(newData)</code></pre>
+<pre><code>##       steps       date interval month
+## 1 1.7169811 2012-10-01        0    10
+## 2 0.3396226 2012-10-01        5    10
+## 3 0.1320755 2012-10-01       10    10
+## 4 0.1509434 2012-10-01       15    10
+## 5 0.0754717 2012-10-01       20    10
+## 6 2.0943396 2012-10-01       25    10</code></pre>
+<pre class="r"><code>newData$weekdays &lt;- factor(format(newData$date, &quot;%A&quot;))
+levels(newData$weekdays)</code></pre>
+<pre><code>## [1] &quot;domingo&quot;   &quot;jueves&quot;    &quot;lunes&quot;     &quot;martes&quot;    &quot;miércoles&quot; &quot;sábado&quot;   
+## [7] &quot;viernes&quot;</code></pre>
+<pre class="r"><code>#Since my versión of R is in spanish, I also consider the spanish names of the days
+levels(newData$weekdays) &lt;- list(weekday = c(&quot;Monday&quot;, &quot;Tuesday&quot;,&quot;Wednesday&quot;,&quot;Thursday&quot;, &quot;Friday&quot;,
+                                             &quot;lunes&quot;,&quot;martes&quot;,&quot;miércoles&quot;,&quot;jueves&quot;,&quot;viernes&quot;),
+                                 weekend = c(&quot;Saturday&quot;, &quot;Sunday&quot;,
+                                             &quot;sábado&quot;,&quot;domingo&quot;))
+levels(newData$weekdays)</code></pre>
+<pre><code>## [1] &quot;weekday&quot; &quot;weekend&quot;</code></pre>
+<pre class="r"><code>table(newData$weekdays)</code></pre>
+<pre><code>## 
+## weekday weekend 
+##   12960    4608</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Make a panel plot containing a time series plot (i.e. type = &quot;l&quot;) of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis).</li>
+</ol>
+<pre class="r"><code>avgSteps &lt;- aggregate(newData$steps, 
+                      list(interval = as.numeric(as.character(newData$interval)), 
+                           weekdays = newData$weekdays),
+                      FUN = &quot;mean&quot;)
+names(avgSteps)[3] &lt;- &quot;meanOfSteps&quot;
+library(lattice)
+xyplot(avgSteps$meanOfSteps ~ avgSteps$interval | avgSteps$weekdays, 
+       layout = c(1, 2), type = &quot;l&quot;, 
+       xlab = &quot;Interval&quot;, ylab = &quot;Number of steps&quot;)</code></pre>
+<p><img src="PA1_template_files/figure-html/Panel%20graph-1.png" /></p>
+</div>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
